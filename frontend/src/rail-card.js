@@ -38,6 +38,8 @@ export class DotmatrixRailCard extends DotmatrixCard {
     show_calling_at: true,
     show_ordinals: true,
     spread: false,
+    show_column_header: false,
+    header_color: "",
     max_boards: 4,
     scroll_speed: 22,
     background: true,
@@ -98,8 +100,33 @@ export class DotmatrixRailCard extends DotmatrixCard {
     // spread: fixed-width columns joined by flexible spacers, so the time sits at the left
     // edge, the status at the right edge, and destination / platform spread between them
     const destW = Math.max(0, ...shown.map((d) => textWidth(d.destination)));
+    // the platform column is at least as wide as its header so "Platform" never scrolls
+    const platColW = c.show_column_header ? Math.max(platW, textWidth("Platform")) : platW;
+    const lineColW = Math.max(0, ...shown.map((d) => textWidth(d.line_name)));
     const lines = [];
     let y = PAD;
+    if (c.show_column_header) {
+      const color = c.header_color ? String(c.header_color) : undefined; // empty: board colour
+      const h = (text, extra = {}) => ({ text, color, ...extra });
+      const cells = [];
+      if (c.show_ordinals !== false) cells.push(h("", { w: ordW, gap: 4 }));
+      cells.push(h("Time", { w: timeW, gap: 5 }));
+      if (c.show_line) cells.push(h("", { w: lineColW, gap: 5 }));
+      if (c.spread) {
+        cells.push(h("", { flex: true }));
+        cells.push(h("Destination", { w: destW }));
+        cells.push(h("", { flex: true }));
+        if (platColW) cells.push(h("Platform", { w: platColW }));
+        cells.push(h("", { flex: true }));
+        cells.push(h("ETA", { w: statusW, align: "right" }));
+      } else {
+        cells.push(h("Destination", { flex: true, gap: 4 }));
+        if (platColW) cells.push(h("Platform", { w: platColW, gap: 5 }));
+        cells.push(h("ETA", { w: statusW, align: "right" }));
+      }
+      lines.push({ y, cells });
+      y += ROW + GAP;
+    }
     if (!shown.length) {
       lines.push({ y, cells: [{ text: c.empty_text || "", flex: true, align: "center" }] });
       y += ROW + GAP;
@@ -108,17 +135,17 @@ export class DotmatrixRailCard extends DotmatrixCard {
       const cells = [];
       if (c.show_ordinals !== false) cells.push({ text: ORDINALS[i], w: ordW, gap: 4 });
       cells.push({ text: d.scheduled || "", w: timeW, gap: 5 });
-      if (c.show_line) cells.push({ text: d.line_name, w: textWidth(d.line_name), gap: 5 });
+      if (c.show_line) cells.push({ text: d.line_name, w: lineColW, gap: 5 });
       if (c.spread) {
         cells.push({ text: "", flex: true });
         cells.push({ text: d.destination, w: destW });
         cells.push({ text: "", flex: true });
-        if (platW) cells.push({ text: plat(d), w: platW });
+        if (platColW) cells.push({ text: plat(d), w: platColW });
         cells.push({ text: "", flex: true });
         cells.push({ text: d.status || "", w: statusW, align: "right" });
       } else {
         cells.push({ text: d.destination, flex: true, gap: 4 });
-        if (platW) cells.push({ text: plat(d), w: platW, gap: 5 });
+        if (platColW) cells.push({ text: plat(d), w: platColW, gap: 5 });
         cells.push({ text: d.status || "", w: statusW, align: "right" });
       }
       lines.push({ y, cells });
