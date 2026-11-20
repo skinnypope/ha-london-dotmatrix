@@ -66,11 +66,16 @@ export function platformLabel(config) {
 export function filterDepartures(attrs, config, now) {
   const lines = (config.lines || []).map((l) => String(l).toLowerCase());
   const platforms = platformFilters(config);
+  const calling = (Array.isArray(config.calling_at) ? config.calling_at : [config.calling_at])
+    .map((s) => String(s || "").trim().toLowerCase()).filter(Boolean);
   const direction = String(config.direction || "").trim().toLowerCase();
   return (Array.isArray(attrs?.departures) ? attrs.departures : [])
     .filter((d) => d.expected * 1000 > now - 30000)
     .filter((d) => !lines.length || lines.includes(String(d.line).toLowerCase()))
     .filter((d) => !platforms.length || platforms.some((f) => platformMatches(d.platform, f)))
+    .filter((d) => !calling.length || calling.some((c) =>
+      String(d.destination || "").toLowerCase() === c ||
+      (Array.isArray(d.calling_at) && d.calling_at.some((s) => String(s).toLowerCase() === c))))
     .filter((d) => !direction || String(d.direction || "").toLowerCase() === direction)
     .sort((a, b) => a.expected - b.expected);
 }
