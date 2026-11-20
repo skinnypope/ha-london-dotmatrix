@@ -13,6 +13,7 @@ const LABELS = {
   title: "Title (default: stop name)",
   header: "Header text (default: platform or line)",
   platform: "Platform (empty: every platform)",
+  platforms: "Platforms (none ticked: every platform)",
   lines: "Only these lines / routes (empty: all)",
   color: "LED colour",
   rows: "Rows on the board",
@@ -46,7 +47,6 @@ function options(attrs, cardType) {
   const platforms = [...new Set(deps.map((d) => d.platform).filter(Boolean))].sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
   const directions = [...new Set(platforms.map((p) => /^(\w+bound)\b/i.exec(p)?.[1]).filter(Boolean))];
   const platformOptions = [
-    { value: "", label: "Every platform" },
     ...directions.map((d) => ({ value: d, label: `${d} (every ${d.toLowerCase()} platform)` })),
     ...platforms.map((p) => ({ value: p, label: p })),
   ];
@@ -76,7 +76,7 @@ function schema(cardType, attrs, entities) {
   const entityFilter = { domain: "sensor", filter: { integration: DOMAIN } };
   if (entities.length) entityFilter.include_entities = entities;
   const entity = { name: "entity", required: true, selector: { entity: entityFilter } };
-  const platform = { name: "platform", selector: { select: { options: platformOptions, custom_value: true, mode: "dropdown" } } };
+  const platform = { name: "platforms", selector: { select: { options: platformOptions, multiple: true, mode: "list" } } };
   const lines = lineOptions.length
     ? { name: "lines", selector: { select: { options: lineOptions, multiple: true, mode: "list" } } }
     : null;
@@ -124,6 +124,10 @@ export class DotmatrixCardEditor extends HTMLElement {
     const defaults = this._cardClass?.defaults || {};
     this._config = { ...config };
     this._formData = { ...defaults, ...config };
+        // the form edits `platforms` (list); fold a legacy single `platform` into it for display
+    if (!Array.isArray(this._formData.platforms)) {
+      this._formData.platforms = this._formData.platform ? [String(this._formData.platform)] : [];
+    }
     this._refreshForm();
   }
 
@@ -275,6 +279,7 @@ export class DotmatrixCardEditor extends HTMLElement {
       }
       const config = { ...this._config, entity };
       delete config.platform; // platforms and lines belong to the old stop
+      delete config.platforms;      
       delete config.lines;
       this._update(config);
       this._setStatus(`Selected: ${stop.name}${stop.letter ? ` (Stop ${stop.letter})` : ""}`);
