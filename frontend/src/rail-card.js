@@ -116,12 +116,12 @@ export class DotmatrixRailCard extends DotmatrixCard {
         cells.push(h("", { flex: true }));
         cells.push(h("Destination", { w: destW }));
         cells.push(h("", { flex: true }));
-        if (platColW) cells.push(h("Platform", { w: platColW }));
+        if (platColW) cells.push(h("Platform", { w: platColW, align: "center" }));
         cells.push(h("", { flex: true }));
         cells.push(h("ETA", { w: statusW, align: "right" }));
       } else {
         cells.push(h("Destination", { flex: true, gap: 4 }));
-        if (platColW) cells.push(h("Platform", { w: platColW, gap: 5 }));
+        if (platColW) cells.push(h("Platform", { w: platColW, gap: 5, align: "center" }));
         cells.push(h("ETA", { w: statusW, align: "right" }));
       }
       lines.push({ y, cells });
@@ -140,12 +140,12 @@ export class DotmatrixRailCard extends DotmatrixCard {
         cells.push({ text: "", flex: true });
         cells.push({ text: d.destination, w: destW });
         cells.push({ text: "", flex: true });
-        if (platColW) cells.push({ text: plat(d), w: platColW });
+        if (platColW) cells.push({ text: plat(d), w: platColW, align: "center" });
         cells.push({ text: "", flex: true });
         cells.push({ text: d.status || "", w: statusW, align: "right" });
       } else {
         cells.push({ text: d.destination, flex: true, gap: 4 });
-        if (platColW) cells.push({ text: plat(d), w: platColW, gap: 5 });
+        if (platColW) cells.push({ text: plat(d), w: platColW, gap: 5, align: "center" });
         cells.push({ text: d.status || "", w: statusW, align: "right" });
       }
       lines.push({ y, cells });
