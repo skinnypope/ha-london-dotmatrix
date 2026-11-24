@@ -14,6 +14,7 @@ const LABELS = {
   header: "Header text (default: platform or line)",
   platform: "Platform (empty: every platform)",
   platforms: "Platforms (none ticked: every platform)",
+  calling_at: "Only trains calling at (empty: every destination)",
   lines: "Only these lines / routes (empty: all)",
   color: "LED colour",
   rows: "Rows on the board",
@@ -97,7 +98,7 @@ function schema(cardType, attrs, entities) {
     ].filter(Boolean);
   }
   if (cardType === "dotmatrix-rail-card") {
-    return [entity, { name: "title", selector: { text: {} } }, platform, lines, { name: "header", selector: { text: {} } },
+    return [entity, { name: "title", selector: { text: {} } }, platform, lines, { name: "calling_at", selector: { text: {} } }, { name: "header", selector: { text: {} } },
       grid(num("rows", 1, 10), color, { name: "header_color", selector: { select: { options: COLORS, custom_value: true, mode: "dropdown" } } },
         num("max_boards", 1, 8), num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape),
       grid(bool("show_title"), bool("show_header"), bool("show_clock"), bool("show_status"), bool("group_by_platform"),
