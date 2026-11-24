@@ -144,8 +144,12 @@ export class DotmatrixCard extends HTMLElement {
 
   connectedCallback() {
     this._resizeObserver = new ResizeObserver(() => {
-      this._dirty = true;
-      this._render();
+      // the dashboard reflows while it loads; only re-rasterise once the size has settled
+      clearTimeout(this._resizeTimer);
+      this._resizeTimer = setTimeout(() => {
+        this._dirty = true;
+        this._render();
+      }, 120);
     });
     this._intersectionObserver = new IntersectionObserver(([entry]) => {
       this._visible = entry.isIntersecting;
@@ -162,6 +166,7 @@ export class DotmatrixCard extends HTMLElement {
     this._intersectionObserver?.disconnect();
     document.removeEventListener("visibilitychange", this._onVisibilityChange);
     clearTimeout(this._timer);
+    clearTimeout(this._resizeTimer);
     this._timer = null;
     this._visible = false;
   }
@@ -235,7 +240,7 @@ export class DotmatrixCard extends HTMLElement {
   _geometry() {
     const width = this._root.clientWidth - 20; // board padding
     if (width <= 0) return null;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // dpr 3 phones: half the raster work, no visible difference
     const ideal = Number(this._config.columns) > 0 ? Number(this._config.columns) : this._idealColumns();
     let pitch = Math.min(MAX_PITCH, Math.max(MIN_PITCH, width / ideal));
     if (Number(this._config.columns) > 0) pitch = Math.max(0.5, width / ideal);
