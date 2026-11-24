@@ -36,6 +36,8 @@ export class DotmatrixRailCard extends DotmatrixCard {
     group_by_platform: false,
     show_line: false,
     show_calling_at: true,
+    show_ordinals: true,
+    center: false,
     max_boards: 4,
     scroll_speed: 22,
     background: true,
@@ -84,15 +86,23 @@ export class DotmatrixRailCard extends DotmatrixCard {
   }
 
   /** National Rail station board. */
-  _nrBoard(deps, attrs, now) {
+  _nrBoard(deps, attrs, now, cols) {
     const c = this._config;
     const count = Math.max(1, Math.min(10, Number(c.rows) || 3));
     const shown = deps.slice(0, count);
-    const ordW = Math.max(...ORDINALS.slice(0, Math.max(1, shown.length)).map(textWidth));
+    const ordW = c.show_ordinals === false ? 0 : Math.max(...ORDINALS.slice(0, Math.max(1, shown.length)).map(textWidth));
     const timeW = textWidth("88:88");
     const plat = (d) => (d.platform === "BUS" ? "Bus" : d.platform || "");
     const platW = Math.max(0, ...shown.map((d) => textWidth(plat(d))));
     const statusW = Math.max(textWidth("On time"), ...shown.map((d) => textWidth(d.status || "")));
+    // centred: the destination column is fixed-width so every row has the same width,
+    // then a blank spacer on the left shifts the whole table to the middle of the board
+    const destW = Math.max(0, ...shown.map((d) => textWidth(d.destination)));
+    const centre = (cells) => {
+      if (!c.center || !cols) return cells;
+      const width = cells.reduce((sum, cell) => sum + (cell.w ?? textWidth(cell.text)) + (cell.gap || 0), 0);
+      return [{ text: "", w: Math.max(0, Math.floor((cols - width) / 2)) }, ...cells];
+    };
     const lines = [];
     let y = PAD;
     if (!shown.length) {
@@ -100,12 +110,15 @@ export class DotmatrixRailCard extends DotmatrixCard {
       y += ROW + GAP;
     }
     shown.forEach((d, i) => {
-      const cells = [{ text: ORDINALS[i], w: ordW, gap: 4 }, { text: d.scheduled || "", w: timeW, gap: 5 }];
+      const cells = [];
+      if (c.show_ordinals !== false) cells.push({ text: ORDINALS[i], w: ordW, gap: 4 });
+      cells.push({ text: d.scheduled || "", w: timeW, gap: 5 });
       if (c.show_line) cells.push({ text: d.line_name, w: textWidth(d.line_name), gap: 5 });
-      cells.push({ text: d.destination, flex: true, gap: 4 });
+      if (c.center) cells.push({ text: d.destination, w: destW, gap: 4 });
+      else cells.push({ text: d.destination, flex: true, gap: 4 });
       if (platW) cells.push({ text: plat(d), w: platW, gap: 5 });
       cells.push({ text: d.status || "", w: statusW, align: "right" });
-      lines.push({ y, cells });
+      lines.push({ y, cells: centre(cells) });
       y += ROW + GAP;
       if (i === 0 && c.show_calling_at) {
         const stops = d.calling_at || [];
@@ -133,11 +146,11 @@ export class DotmatrixRailCard extends DotmatrixCard {
     return { lines, rows: y - GAP + PAD };
   }
 
-  _buildModel(attrs, now) {
+  _buildModel(attrs, now, cols) {
     const c = this._config;
     const deps = filterDepartures(attrs, c, now);
     if ((attrs.modes || []).includes("national-rail")) {
-      const board = this._nrBoard(deps, attrs, now);
+      const board = this._nrBoard(deps, attrs, now, cols);
       return { title: attrs.stop_name || "", panels: [{ key: "nr", rows: board.rows, lines: withFont(board.lines) }] };
     }
     const title = attrs.stop_name || "";
