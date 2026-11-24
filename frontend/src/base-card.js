@@ -39,20 +39,41 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+/** Platform filters from the config: `platforms` (list) and the legacy single `platform`, combined. */
+function platformFilters(config) {
+  const raw = [];
+  if (Array.isArray(config.platforms)) raw.push(...config.platforms);
+  else if (config.platforms != null) raw.push(config.platforms);
+  if (config.platform != null) raw.push(config.platform);
+  return [...new Set(raw.map((p) => String(p).trim().toLowerCase()).filter(Boolean))];
+}
+
+/** Exact match always; substring only for word-like filters ("Eastbound", "Platform 5"),
+ *  so a filter of "1" does not also catch platforms "10"-"15". */
+function platformMatches(platform, filter) {
+  const p = String(platform || "").toLowerCase();
+  return !!p && (p === filter || (filter.length >= 3 && /[a-z]/.test(filter) && p.includes(filter)));
+}
+
+/** Fallback board header / group key for the configured platform filter. */
+export function platformLabel(config) {
+  const single = String(config.platform || "").trim();
+  if (single) return single;
+  return (Array.isArray(config.platforms) ? config.platforms : []).map((p) => String(p).trim()).filter(Boolean).join(" / ");
+}
+
 /** Departures of the card's stop that pass the card's filters (still visible for 30 s after due). */
 export function filterDepartures(attrs, config, now) {
   const lines = (config.lines || []).map((l) => String(l).toLowerCase());
-  const platform = String(config.platform || "").trim().toLowerCase();
+  const platforms = platformFilters(config);
   const direction = String(config.direction || "").trim().toLowerCase();
   return (Array.isArray(attrs?.departures) ? attrs.departures : [])
     .filter((d) => d.expected * 1000 > now - 30000)
     .filter((d) => !lines.length || lines.includes(String(d.line).toLowerCase()))
-    .filter((d) => !platform || String(d.platform || "").toLowerCase() === platform ||
-      String(d.platform || "").toLowerCase().includes(platform))
+    .filter((d) => !platforms.length || platforms.some((f) => platformMatches(d.platform, f)))
     .filter((d) => !direction || String(d.direction || "").toLowerCase() === direction)
     .sort((a, b) => a.expected - b.expected);
 }
-
 /** Disruption text for the given lines (only lines that are not running a good service). */
 export function statusText(attrs, lineIds) {
   const wanted = new Set(lineIds.map((l) => String(l).toLowerCase()));

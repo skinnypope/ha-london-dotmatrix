@@ -36,6 +36,32 @@ test("filters by platform direction and line", () => {
   assert.equal(filterDepartures(a, {}, now + 15 * 60 * 1000).length, 0);
 });
 
+test("filters by several platforms at once (rail)", () => {
+  const now = Date.now();
+  const a = attrs("nr", now / 1000); // platforms: 4, 6, "" (cancelled), 1
+  assert.equal(filterDepartures(a, {}, now).length, 4);
+  assert.equal(filterDepartures(a, { platforms: ["4", "6"] }, now).length, 2); // e.g. Putney platforms 1 and 2 together
+  assert.equal(filterDepartures(a, { platform: "4" }, now).length, 1); // legacy single string still works
+  assert.equal(filterDepartures(a, { platforms: ["4"], platform: "6" }, now).length, 2); // both combine
+  assert.equal(filterDepartures(a, { platforms: [] }, now).length, 4); // empty list: every platform
+  assert.equal(filterDepartures(a, { platforms: ["4", "6"] }, now).every((d) => ["4", "6"].includes(d.platform)), true);
+});
+
+test("numeric platform filters are exact: '1' does not catch '10'", () => {
+  const now = Date.now();
+  const a = attrs("nr", now / 1000);
+  a.departures.push({ ...a.departures[0], platform: "10", destination: "Peterborough", expected: Math.round(now / 1000) + 1500 });
+  assert.deepEqual(filterDepartures(a, { platforms: ["1"] }, now).map((d) => d.destination), ["Hayes"]);
+  assert.equal(filterDepartures(a, { platforms: ["1", "10"] }, now).length, 2);
+});
+
+test("word-like platform filters still match a direction within the platform name", () => {
+  const now = Date.now();
+  const a = attrs("tube", now / 1000);
+  assert.equal(filterDepartures(a, { platforms: ["Eastbound"] }, now).length, 4);
+  assert.equal(filterDepartures(a, { platforms: ["Platform 6"] }, now).length, 3);
+});
+
 test("status text only for disrupted lines", () => {
   const a = attrs("tube");
   assert.match(statusText(a, ["victoria", "central"]), /Minor delays/);

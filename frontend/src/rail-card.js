@@ -8,7 +8,7 @@ import { fontHeight, textWidth as luWidth } from "./engine.js";
 const FONT = "dm"; // UK station board 5x7 typeface
 const ROW = fontHeight(FONT);
 const textWidth = (t) => luWidth(t, FONT);
-import { DotmatrixCard, filterDepartures, londonClock, secondsTo, statusText } from "./base-card.js";
+import { DotmatrixCard, filterDepartures, londonClock, platformLabel, secondsTo, statusText } from "./base-card.js";
 import { tubeTime } from "./tube-card.js";
 
 const GAP = 2;
@@ -153,7 +153,7 @@ export class DotmatrixRailCard extends DotmatrixCard {
       groups = [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "en", { numeric: true }));
       groups = groups.slice(0, Math.max(1, Number(c.max_boards) || 1));
     }
-    if (!groups?.length) groups = [[c.platform || "", deps]];
+    if (!groups?.length) groups = [[platformLabel(c), deps]];
     const panels = groups.map(([key, list]) => {
       const header = c.header || key || [...new Set(list.map((d) => d.line_name))].join(" / ") || lineNames || title;
       const board = this._board(list, attrs, now, header);
