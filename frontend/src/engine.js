@@ -214,10 +214,8 @@ export class Panel {
     const ctx = canvas.getContext("2d");
     ctx.translate(0, this.pp);
     ctx.fillStyle = color;
-    if (this.style.glow !== false) { // the halo is the expensive part of rasterising a strip
-      ctx.shadowColor = color;
-      ctx.shadowBlur = this.pp * 0.9;
-    }
+    ctx.shadowColor = color;
+    ctx.shadowBlur = this.pp * 0.9;
     ctx.fill(this._dotPath(cols, rows, test));
     return canvas;
   }
@@ -316,7 +314,7 @@ export class Panel {
         const tileWidth = scroll ? width * 2 : width;
         const rows = matrix.rows;
         const cacheKey = scroll ? "" :
-          `${pp}|${this.style.glow !== false}|${layer.color}|${layer.font}|${width}|${offset}|${layer.text}`;
+          `${pp}|${layer.color}|${layer.font}|${width}|${offset}|${layer.text}`;
         if (cacheKey && STRIP_CACHE.has(cacheKey)) {
           layer.bitmap = STRIP_CACHE.get(cacheKey);
         } else {

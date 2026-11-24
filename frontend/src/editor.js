@@ -37,7 +37,6 @@ const LABELS = {
   show_column_header: "Column header row (Time / Destination / Platform / ETA)",
   header_color: "Column header colour (empty: board colour)",
   background: "Black board with bezel",
-  glow: "LED glow (turn off on slow devices)",
   show_attribution: "Data source line under the board",
   empty_text: "Text when nothing is due",
 };
@@ -95,7 +94,7 @@ function schema(cardType, attrs, entities) {
   if (cardType === "dotmatrix-bus-card") {
     return [entity, { name: "title", selector: { text: {} } }, lines,
       grid(num("rows", 1, 8), num("departures", 1, 20), color, num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape, { name: "empty_text", selector: { text: {} } }),
-      grid(bool("show_title"), bool("show_header"), bool("show_clock"), bool("show_status"), bool("background"), bool("glow"), bool("show_attribution")),
+      grid(bool("show_title"), bool("show_header"), bool("show_clock"), bool("show_status"), bool("background"), bool("show_attribution")),
     ].filter(Boolean);
   }
   if (cardType === "dotmatrix-rail-card") {
@@ -103,12 +102,12 @@ function schema(cardType, attrs, entities) {
       grid(num("rows", 1, 10), color, { name: "header_color", selector: { select: { options: COLORS, custom_value: true, mode: "dropdown" } } },
         num("max_boards", 1, 8), num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape),
       grid(bool("show_title"), bool("show_header"), bool("show_clock"), bool("show_status"), bool("group_by_platform"),
-        bool("show_line"), bool("show_calling_at"), bool("show_ordinals"), bool("spread"), bool("show_column_header"), bool("background"), bool("glow"), bool("show_attribution")),
+        bool("show_line"), bool("show_calling_at"), bool("show_ordinals"), bool("spread"), bool("show_column_header"), bool("background"), bool("show_attribution")),
     ].filter(Boolean);
   }
   return [entity, { name: "title", selector: { text: {} } }, platform, lines,
     grid(color, num("max_boards", 1, 8), num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape, { name: "empty_text", selector: { text: {} } }),
-    grid(bool("show_title"), bool("show_platform"), bool("show_clock"), bool("stand_back"), bool("show_status"), bool("background"), bool("glow"), bool("show_attribution")),
+    grid(bool("show_title"), bool("show_platform"), bool("show_clock"), bool("stand_back"), bool("show_status"), bool("background"), bool("show_attribution")),
   ].filter(Boolean);
 }
 

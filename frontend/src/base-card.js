@@ -219,7 +219,6 @@ export class DotmatrixCard extends HTMLElement {
       dim: c.background === false ? "rgba(127,127,127,0.14)" : `rgba(${r},${g},${b},0.075)`,
       round: c.dot_shape !== "square",
       speed: Number(c.scroll_speed) > 0 ? Number(c.scroll_speed) : 22,
-      glow: c.glow !== false,
     };
   }
 

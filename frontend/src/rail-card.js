@@ -43,7 +43,6 @@ export class DotmatrixRailCard extends DotmatrixCard {
     max_boards: 4,
     scroll_speed: 22,
     background: true,
-    glow: true,
     show_attribution: false,
     empty_text: "No departures",
   };

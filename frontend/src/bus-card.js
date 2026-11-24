@@ -29,7 +29,6 @@ export class DotmatrixBusCard extends DotmatrixCard {
     show_status: true,
     scroll_speed: 22,
     background: true,
-    glow: true,
     show_attribution: false,
     dot_shape: "round",
     empty_text: "No buses due",
