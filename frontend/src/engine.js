@@ -210,8 +210,11 @@ export class Panel {
     canvas.height = (rows + 2) * this.pp;
     const ctx = canvas.getContext("2d");
     ctx.translate(0, this.pp);
-    ctx.fillStyle = ctx.shadowColor = color;
-    ctx.shadowBlur = this.pp * 0.9;
+    ctx.fillStyle = color;
+    if (this.style.glow !== false) { // the halo is the expensive part of rasterising a strip
+      ctx.shadowColor = color;
+      ctx.shadowBlur = this.pp * 0.9;
+    }    
     ctx.fill(this._dotPath(cols, rows, test));
     return canvas;
   }
