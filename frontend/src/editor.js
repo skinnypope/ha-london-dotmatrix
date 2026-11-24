@@ -33,6 +33,8 @@ const LABELS = {
   show_calling_at: "National Rail: calling points under the first train",
   show_ordinals: "Train numbers (1st, 2nd, 3rd…)",
   spread: "Spread the columns across the board",
+  show_column_header: "Column header row (Time / Destination / Platform / ETA)",
+  header_color: "Column header colour (empty: board colour)",
   background: "Black board with bezel",
   show_attribution: "Data source line under the board",
   empty_text: "Text when nothing is due",
@@ -96,9 +98,10 @@ function schema(cardType, attrs, entities) {
   }
   if (cardType === "dotmatrix-rail-card") {
     return [entity, { name: "title", selector: { text: {} } }, platform, lines, { name: "header", selector: { text: {} } },
-      grid(num("rows", 1, 10), color, num("max_boards", 1, 8), num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape),
+      grid(num("rows", 1, 10), color, { name: "header_color", selector: { select: { options: COLORS, custom_value: true, mode: "dropdown" } } },
+        num("max_boards", 1, 8), num("scroll_speed", 5, 60), num("columns", 80, 400, 10), shape),
       grid(bool("show_title"), bool("show_header"), bool("show_clock"), bool("show_status"), bool("group_by_platform"),
-        bool("show_line"), bool("show_calling_at"), bool("show_ordinals"), bool("spread"), bool("background"), bool("show_attribution")),
+        bool("show_line"), bool("show_calling_at"), bool("show_ordinals"), bool("spread"), bool("show_column_header"), bool("background"), bool("show_attribution")),
     ].filter(Boolean);
   }
   return [entity, { name: "title", selector: { text: {} } }, platform, lines,
